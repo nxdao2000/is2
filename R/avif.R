@@ -1,8 +1,8 @@
-# is2 algorithm functions
+# avif algorithm functions
 
-# define the is2 class
+# define the avif class
 setClass(
-    'is2',
+    'avif',
     contains='pfilter2d.pomp',
     slots=c(
         transform = "logical",
@@ -87,7 +87,7 @@ is.cooling <- function (factor, n){   # default geometric cooling schedule
     list(alpha=alpha,gamma=alpha^2)
 }
 
-is2.cooling <- function (frac, nt, m, n){   # cooling schedule for is2
+avif.cooling <- function (frac, nt, m, n){   # cooling schedule for avif
     ## frac is the fraction of cooling after 50 iterations
     scal <- (50*n*frac-1)/(1-frac)
     alpha <- (1+scal)/(scal+nt+n*(m-1))
@@ -107,7 +107,7 @@ powerlaw.cooling <- function (init = 1, delta = 0.1, eps = (1-delta)/2, n){
     list(alpha=alpha,gamma=gamma)
 }
 
-is2.internal <- function (
+avif.internal <- function (
     object, Nis,
     start, pars, ivps,
     particles,
@@ -230,7 +230,7 @@ is2.internal <- function (
     ## the following deals with the deprecated option 'cooling.factor'
     if (!missing(cooling.factor)) {
         warning(sQuote("cooling.factor")," is deprecated.\n",
-            "See ",sQuote("?is2")," for instructions on specifying the cooling schedule.",
+            "See ",sQuote("?avif")," for instructions on specifying the cooling schedule.",
             call.=FALSE)
         cooling.factor <- as.numeric(cooling.factor)
         if ((length(cooling.factor)!=1)||(cooling.factor<0)||(cooling.factor>1))
@@ -253,7 +253,7 @@ is2.internal <- function (
     
     cooling <- cooling.function(
         type=cooling.type,
-        perobs=(method=="is2")||(method=="ris1")||(method=="is3"),
+        perobs=(method=="avif")||(method=="ris1")||(method=="is3"),
         fraction=cooling.fraction,
         ntimes=ntimes
     )
@@ -288,7 +288,7 @@ is2.internal <- function (
     
     if (!all(is.finite(theta[c(pars,ivps)]))){
         stop(
-            sQuote("is2")," cannot estimate non-finite parameters.\n",
+            sQuote("avif")," cannot estimate non-finite parameters.\n",
             "The following ",if (transform) "transformed ", "parameters are non-finite: ",
             paste(
                 sQuote(c(pars,ivps)[!is.finite(theta[c(pars,ivps)])]),
@@ -301,7 +301,7 @@ is2.internal <- function (
     obj <- as(object,"pomp")
     
     if (Nis>0) {
-        tmp.is2 <- new("is2",object,particles=particles,Np=Np[1L])
+        tmp.avif <- new("avif",object,particles=particles,Np=Np[1L])
     } 
     else{
         pfp <- obj
@@ -309,10 +309,6 @@ is2.internal <- function (
     
     have.parmat <- !(is.null(paramMatrix) || length(paramMatrix)==0)
     newtheta<-theta
-    gradient<-theta
-    thetamd<-theta
-    thetaag<-theta
-    oldtheta<-theta
     
     for (n in seq_len(Nis)){ ## iterate the smoothing
         
@@ -324,7 +320,7 @@ is2.internal <- function (
         ## initialize the parameter portions of the particles
         P <- try(
             particles(
-                tmp.is2,
+                tmp.avif,
                 Np=Np[1L],
                 center=theta,
                 sd=sigma.n*var.factor
@@ -364,35 +360,14 @@ is2.internal <- function (
         
         gnsi <- FALSE
         
-        paramMatrix <- pfp@paramMatrix
-                oldtheta1<-theta
-                oldtheta<-theta
-                npars<-length(pars)
-                names(oldtheta)<-names(theta)
-                newtheta[c(pars,ivps)]<-0
-                npars<-length(theta)
-                Hessian<-array(0,dim=c(npars,npars))
-                colnames(Hessian)<-names(theta)
-                rownames(Hessian)<-names(theta)
-                if (lag>0){
-                    phat<-pfp@phats
-                    names(phat)<-names(theta)
-                    covhat<-pfp@covhats
-                    colnames(covhat)<-names(theta)
-                    rownames(covhat)<-names(theta)
-                    Hessian[c(pars,ivps),c(pars,ivps)]<-covhat[c(pars,ivps),c(pars,ivps)]-ntimes*diag(sigma.n[c(pars,ivps)]^2)
-                    newtheta[c(pars,ivps)] <- phat[c(pars,ivps)]-ntimes*oldtheta[c(pars,ivps)]  
-                    Hessian[c(pars,ivps),c(pars,ivps)]<-0.5*(Hessian[c(pars,ivps),c(pars,ivps)]+t(Hessian[c(pars,ivps),c(pars,ivps)]))
-                    v1 <- cool.sched$gamma*sigma[c(pars,ivps)]^2  
-                    newtheta[c(pars,ivps)]<- solve(Hessian[c(pars,ivps),c(pars,ivps)])%*%newtheta[c(pars,ivps)]*v1  
-                    theta[c(pars,ivps)]  <-  oldtheta1[c(pars,ivps)]-newtheta[c(pars,ivps)]
-                }
+        phat<-pfp@phats
+        theta[c(pars,ivps)]  <-  phat[c(pars,ivps)]/ntimes
         
         #theta[ivps] <- pfp@filter.mean[ivps,ic.lag]
         conv.rec[n+1,-c(1,2)] <- theta
         conv.rec[n,c(1,2)] <- c(pfp@loglik,pfp@nfail)
         
-        if (verbose) cat("is2 iteration ",n," of ",Nis," completed\n")
+        if (verbose) cat("avif iteration ",n," of ",Nis," completed\n")
         
     } ### end of main loop
     
@@ -400,7 +375,7 @@ is2.internal <- function (
     if (transform) theta <- partrans(pfp,theta,dir="forward")
     
     new(
-        "is2",
+        "avif",
         pfp,
         transform=transform,
         params=theta,
@@ -416,13 +391,13 @@ is2.internal <- function (
         method=method,
         cooling.type=cooling.type,
         cooling.fraction=cooling.fraction,
-        paramMatrix= paramMatrix,
+        paramMatrix= array(data=numeric(0),dim=c(0,0)),
         lag=lag
     )
 }
 
 setMethod(
-    "is2",
+    "avif",
     signature=signature(object="pomp"),
     function (object, Nis = 1,
             start,
@@ -431,7 +406,7 @@ setMethod(
             Np, ic.lag, var.factor,lag,
             cooling.type = c("geometric","hyperbolic"),
             cooling.fraction, cooling.factor,
-            method = c("is2","ris1","is1", "is3"),
+            method = c("avif","ris1","is1", "is3"),
             tol = 1e-17, max.fail = Inf,
             verbose = getOption("verbose"),
             transform = FALSE,
@@ -481,7 +456,7 @@ setMethod(
                 )
         }
         
-        is2.internal(
+        avif.internal(
             object=object,
             Nis=Nis,
             start=start,
@@ -509,7 +484,7 @@ setMethod(
 
 
 setMethod(
-    "is2",
+    "avif",
     signature=signature(object="pfilter2d.pomp"),
     function (object, Nis = 1, Np, tol,
               ...) {
@@ -517,7 +492,7 @@ setMethod(
         if (missing(Np)) Np <- object@Np
         if (missing(tol)) tol <- object@tol
         
-        is2(
+        avif(
             object=as(object,"pomp"),
             Nis=Nis,
             Np=Np,
@@ -528,8 +503,8 @@ setMethod(
 )
 
 setMethod(
-    "is2",
-    signature=signature(object="is2"),
+    "avif",
+    signature=signature(object="avif"),
     function (object, Nis,
               start,
               pars, ivps,
@@ -558,7 +533,7 @@ setMethod(
         if (missing(Np)) Np <- object@Np
         if (missing(tol)) tol <- object@tol
         if (missing(lag)) lag <- object@lag
-        is2(
+        avif(
             object=as(object,"pomp"),
             Nis=Nis,
             start=start,
@@ -582,13 +557,13 @@ setMethod(
 
 setMethod(
     'continue',
-    signature=signature(object='is2'),
+    signature=signature(object='avif'),
     function (object, Nis = 1,
               ...) {
         
         ndone <- object@Nis
         
-        obj <- is2(
+        obj <- avif(
             object=object,
             Nis=Nis,
             .ndone=ndone,
@@ -607,7 +582,7 @@ setMethod(
     }
 )
 
-is2.profileDesign <- function (object, profile, lower, upper, nprof, ivps, 
+avif.profileDesign <- function (object, profile, lower, upper, nprof, ivps, 
                                rw.sd, Np, ic.lag,lag, var.factor, cooling.factor,option, cooling.fraction, paramMatrix, ...)
 {
     if (missing(profile)) profile <- list()
@@ -630,7 +605,7 @@ is2.profileDesign <- function (object, profile, lower, upper, nprof, ivps,
     ans <- vector(mode="list",length=nrow(pd))
     for (k in seq_len(nrow(pd))) {
         ans[[k]] <- list(
-            mf=is2(
+            mf=avif(
                 object,
                 Nis=0,
                 start=unlist(pd[k,]),

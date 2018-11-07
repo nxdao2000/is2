@@ -1,13 +1,30 @@
 import(pomp)
 useDynLib(is2,
           systematic_resampling,
-          pfilter2_computations
+          pfilter_computations,
+          pfilter2_computations,
+          pfilter3_computations
         )
-exportClasses(pomp,
-              pfilterd2.pomp,
-              is2
+exportClasses(pfilter1d.pomp,
+              pfilter2d.pomp,
+              pfilter3d.pomp,
+              pfilter4d.pomp,
+              psmooth.pomp,
+              mif1,mif1List,
+              aif,aifList,
+              avif,avifList,
+              is2,is2List,
+              is3,is3List,
+              mif3,mif3List,
+              mifMomentum,mifMomentumList,
+              pmif,pmifList
             )
-exportMethods(plot,logLik,pfilter2,
-              particles,is2,continue
+S3method(as.data.frame,pfilter1d.pomp)
+S3method(as.data.frame,pfilter2d.pomp)
+S3method(as.data.frame,pfilter4d.pomp)
+S3method(as.data.frame,psmooth.pomp)
+
+exportMethods(plot,logLik,pfilter1, pfilter2,pfilter3,pfilter4,psmooth,aif, avif, mif3, pmif,
+              is2,is3, mifMomentum, continue
             )
 export()

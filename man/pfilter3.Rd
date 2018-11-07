@@ -1,23 +1,23 @@
-\name{pfilter2}
-\alias{pfilter2}
-\alias{pfilter2,pomp-method}
-\alias{pfilter2-pomp}
-\alias{pfilter2,pfilterd2.pomp-method}
-\alias{pfilter2-pfilterd2.pomp}
-\alias{pfilterd2.pomp-class}
+\name{pfilter3}
+\alias{pfilter3}
+\alias{pfilter3,pomp-method}
+\alias{pfilter3-pomp}
+\alias{pfilter3,pfilter3d.pomp-method}
+\alias{pfilter3-pfilter3d.pomp}
+\alias{pfilter3d.pomp-class}
 \title{Particle filter}
 \description{
   Run a plain vanilla particle filter.
   Resampling is performed at each observation.
 }
 \usage{
-\S4method{pfilter2}{pomp}(object, params, Np, tol = 1e-17,
+\S4method{pfilter3}{pomp}(object, params, Np, tol = 1e-17,
     max.fail = Inf, pred.mean = FALSE, pred.var = FALSE,
     filter.mean = FALSE, 
     save.states = FALSE,
     save.params = FALSE, lag=0, seed = NULL,
     verbose = getOption("verbose"), \dots)
-\S4method{pfilter2}{pfilterd2.pomp}(object, params, Np, tol, \dots)
+\S4method{pfilter3}{pfilter3d.pomp}(object, params, Np, tol, \dots)
 }
 \arguments{
   \item{object}{
@@ -60,8 +60,8 @@
   }
   \item{save.states, save.params}{
     logical.
-    If \code{save.states=TRUE}, the state-vector for each particle at each time is saved in the \code{saved.states} slot of the returned \code{\link[=pfilterd2.pomp-class]{pfilterd2.pomp}} object.
-    If \code{save.params=TRUE}, the parameter-vector for each particle at each time is saved in the \code{saved.params} slot of the returned \code{\link[=pfilterd2.pomp-class]{pfilterd2.pomp}} object.
+    If \code{save.states=TRUE}, the state-vector for each particle at each time is saved in the \code{saved.states} slot of the returned \code{\link[=pfilter3d.pomp-class]{pfilter3d.pomp}} object.
+    If \code{save.params=TRUE}, the parameter-vector for each particle at each time is saved in the \code{saved.params} slot of the returned \code{\link[=pfilter3d.pomp-class]{pfilter3d.pomp}} object.
   }
 \item{lag}{
    positive numeric scalar; use for fixed lag smoothing.
@@ -72,15 +72,15 @@
     By default, the state of the random number generator is not changed and the value of \code{.Random.seed} on the call is stored in the \dQuote{seed} element of the return list.
   }
   \item{verbose}{
-    logical; if \code{TRUE}, progress information is reported as \code{pfilter2} works.
+    logical; if \code{TRUE}, progress information is reported as \code{pfilter3} works.
   }
   \item{\dots}{
-    By default, when \code{pfilter2} pfilter is run on a \code{pfilterd2.pomp} object, the settings in the original call are re-used.
+    By default, when \code{pfilter3} pfilter is run on a \code{pfilter3d.pomp} object, the settings in the original call are re-used.
     This default behavior can be overridden by changing the settings (see Examples below).
   }
 }
 \value{
-  An object of class \code{\link[=pfilterd2.pomp-class]{pfilterd2.pomp}}.
+  An object of class \code{\link[=pfilter3d.pomp-class]{pfilter3d.pomp}}.
   This class inherits from class \code{\link[=pomp-class]{pomp}} and contains the following additional slots:
   \describe{
     \item{pred.mean, pred.var, filter.mean}{
@@ -94,17 +94,17 @@
       numeric vector containing the conditional log likelihoods at each time point.
     }
     \item{saved.states}{
-      If \code{pfilter2} was called with \code{save.states=TRUE}, this is the list of state-vectors at each time point, for each particle.
+      If \code{pfilter3} was called with \code{save.states=TRUE}, this is the list of state-vectors at each time point, for each particle.
       It is a length-\code{ntimes} list of \code{nvars}-by-\code{Np} arrays.
       In particular, \code{saved.states[[t]][,i]} can be considered a sample from \eqn{f[X_t|y_{1:t}]}.
     }
     \item{saved.params}{
-      If \code{pfilter2} was called with \code{save.params=TRUE}, this is the list of parameter-vectors at each time point, for each particle.
+      If \code{pfilter3} was called with \code{save.params=TRUE}, this is the list of parameter-vectors at each time point, for each particle.
       It is a length-\code{ntimes} list of \code{npars}-by-\code{Np} arrays.
       In particular, \code{saved.params[[t]][,i]} is the parameter portion of the i-th particle at time \eqn{t}.
     }
     \item{seed}{
-      the state of the random number generator at the time \code{pfilter2} was called.
+      the state of the random number generator at the time \code{pfilter3} was called.
       If the argument \code{seed} was specified, this is a copy;
       if not, this is the internal state of the random number generator at the time of call.
     }
@@ -117,8 +117,8 @@
   }
   These can be accessed using the \code{$} operator as if the returned object were a list.
   In addition, \code{logLik} returns the log likelihood.
-  Note that if the argument \code{params} is a named vector, then these parameters are included in the \code{params} slot of the returned \code{pfilterd2.pomp} object.
-  That is \code{coef(pfilter2(obj,params=theta))==theta} if \code{theta} is a named vector of parameters.
+  Note that if the argument \code{params} is a named vector, then these parameters are included in the \code{params} slot of the returned \code{pfilter3d.pomp} object.
+  That is \code{coef(pfilter3(obj,params=theta))==theta} if \code{theta} is a named vector of parameters.
 }
 
 \references{
@@ -126,7 +126,7 @@
   A Tutorial on Particle Filters for Online Nonlinear, Non-Gaussian Bayesian Tracking.
   IEEE Trans. Sig. Proc. 50:174--188, 2002.
 }
-\author{{Dao Nguyen \email{dxnguyen at olemiss dot edu}}, {Edward L. Ionides \email{ionides at umich dot edu}}}
+\author{{Dao Nguyen \email{dxnguyen at olemiss dot edu}}, {Xin Dang \email{xdang at olemiss dot edu}}, {Duc Anh Doan \email{ddoan at olemiss dot edu}}}
 \seealso{\code{\link{is2}}}
 \keyword{models}
 \keyword{ts}

@@ -1,4 +1,5 @@
 // -*- C++ -*-
+// -*- C++ -*-
 #include <R.h>
 #include <Rmath.h>
 #include <Rdefines.h>
@@ -66,29 +67,6 @@ static R_INLINE void fixdimnames (SEXP x, const char **names, int n) {
 
 
 
-void renormalize(double *w, int n, int log) {
-  int i;
-
-  if (log) {
-    double max=w[0];
-    for (i=1; i<n; i++) {
-      if (w[i]>max) max = w[i];
-    }
-    for (i=0; i<n; i++) {
-      w[i] = exp(w[i]-max);
-    }
-  }
-
-  double sum=0;
-  for (i=0; i<n; i++) {
-    sum += w[i];
-  }
-  for (i=0; i<n; i++) {
-    w[i] /= sum;
-  }
-}
-
-
 static void nosort_resamp (int nw, double *w, int np, int *p, int offset) 
 {
   int i, j;
@@ -115,21 +93,6 @@ if (offset)      // add offset if needed
 
 }
 
-SEXP systematic_resampling (SEXP weights)
-{
-  int nprotect = 0;
-  int n;
-  SEXP perm;
-
-  GetRNGstate();
-  n = LENGTH(weights);
-  PROTECT(perm = NEW_INTEGER(n)); nprotect++;
-  nosort_resamp(n,REAL(weights),n,INTEGER(perm),1);
-  UNPROTECT(nprotect);
-  PutRNGstate();
-  return(perm);
-}
-
 // examines weights for filtering failure
 // computes log likelihood and effective sample size
 // computes (if desired) prediction mean, prediction variance, filtering mean.
@@ -137,8 +100,8 @@ SEXP systematic_resampling (SEXP weights)
 // weights are used in filtering mean computation.
 // if length(weights) == 1, an unweighted average is computed.
 // returns all of the above in a named list
-SEXP pfilter2_computations (SEXP x, SEXP params, SEXP Np,
-			   SEXP rw, SEXP rw_sd,
+SEXP pfilter_computations (SEXP x, SEXP params, SEXP Np,
+			   SEXP rw_sd,
 			   SEXP predmean, SEXP predvar,
 			   SEXP filtmean, SEXP trackancestry, SEXP onepar,
 			   SEXP weights, SEXP tol)
@@ -149,10 +112,9 @@ SEXP pfilter2_computations (SEXP x, SEXP params, SEXP Np,
   SEXP newstates = R_NilValue, newparams = R_NilValue;
   SEXP retval, retvalnames;
   const char *dimnm[2] = {"variable","rep"};
-  double *xpm = 0, *xpv = 0, *xfm = 0, *xw = 0, *xx = 0, *xp = 0,*xpw=0;
-  int *xanc = 0, *xpa=0;
+  double *xpm = 0, *xpv = 0, *xfm = 0, *xw = 0, *xx = 0, *xp = 0;
+  int *xanc = 0;
   SEXP dimX, dimP, newdim, Xnames, Pnames, pindex;
-  SEXP pw=R_NilValue,pa=R_NilValue, psample=R_NilValue;
   int *dim, *pidx, lv, np;
   int nvars, npars = 0, nrw = 0, nreps, offset, nlost;
   int do_rw, do_pm, do_pv, do_fm, do_ta, do_par_resamp, all_fail = 0;
@@ -174,19 +136,25 @@ SEXP pfilter2_computations (SEXP x, SEXP params, SEXP Np,
 
   np = *(INTEGER(AS_INTEGER(Np))); // number of particles to resample
 
-  do_rw = *(LOGICAL(AS_LOGICAL(rw))); // do random walk in parameters?
-
+  nrw = LENGTH(rw_sd);	     // number of parameters that are variable
+  do_rw = nrw > 0;	     // do random walk in parameters?
+  if (do_rw) {
     // names of parameters undergoing random walk
-  PROTECT(rw_names = GET_NAMES(rw_sd)); nprotect++;
+    PROTECT(rw_names = GET_NAMES(rw_sd)); nprotect++;
+  }
 
   do_pm = *(LOGICAL(AS_LOGICAL(predmean))); // calculate prediction means?
   do_pv = *(LOGICAL(AS_LOGICAL(predvar)));  // calculate prediction variances?
   do_fm = *(LOGICAL(AS_LOGICAL(filtmean))); // calculate filtering means?
   do_ta = *(LOGICAL(AS_LOGICAL(trackancestry))); // track ancestry?
   do_par_resamp = *(LOGICAL(AS_LOGICAL(onepar))); // are all cols of 'params' the same?
-  do_par_resamp = !do_par_resamp || do_rw || (np != nreps); // should we do parameter resampling?
+  do_par_resamp = !do_par_resamp || do_rw; // should we do parameter resampling?
 
-  
+  if (do_par_resamp) {
+    if (dim[1] != nreps) 
+      errorcall(R_NilValue,"ncol('states') should be equal to ncol('params')"); // # nocov
+  }
+
   PROTECT(ess = NEW_NUMERIC(1)); nprotect++; // effective sample size
   PROTECT(loglik = NEW_NUMERIC(1)); nprotect++; // log likelihood
   PROTECT(fail = NEW_LOGICAL(1)); nprotect++;	// particle failure?
@@ -219,7 +187,6 @@ SEXP pfilter2_computations (SEXP x, SEXP params, SEXP Np,
     PROTECT(pindex = matchnames(Pnames,rw_names,"parameters")); nprotect++; 
     xp = REAL(params);
     pidx = INTEGER(pindex);
-    nrw = LENGTH(rw_names);
     lv = nvars+nrw;
   } else {
     pidx = NULL;
@@ -339,13 +306,8 @@ SEXP pfilter2_computations (SEXP x, SEXP params, SEXP Np,
       ps = REAL(params);
       pt = REAL(newparams);
     }
-    
-    PROTECT(pw = NEW_NUMERIC(nreps)); nprotect++;
-    xpw = REAL(pw);
-    for (k = 0; k < nreps; k++)
-      xpw[k]=REAL(weights)[k];
-      
-      
+
+    // resample
     nosort_resamp(nreps,REAL(weights),np,sample,0);
     for (k = 0; k < np; k++) { // copy the particles
       for (j = 0, xx = ss+nvars*sample[k]; j < nvars; j++, st++, xx++) 
@@ -369,28 +331,11 @@ SEXP pfilter2_computations (SEXP x, SEXP params, SEXP Np,
     if (do_ta) 
       for (k = 0; k < np; k++) xanc[k] = k+1;
   }
-  
-  if (do_rw) { // if random walk, adjust prediction variance and move particles
-    xx = REAL(rw_sd);
-    xp = (all_fail || !do_par_resamp) ? REAL(params) : REAL(newparams);
-    nreps = (all_fail) ? nreps : np;
 
-    for (j = 0; j < nrw; j++) {
-      offset = pidx[j];
-      vsq = xx[j];
-      if (do_pv) {
-	xpv[nvars+j] += vsq*vsq;
-      }
-      for (k = 0; k < nreps; k++)
-	xp[offset+k*npars] += rnorm(0,vsq);
-    }
-  }
-
-  renormalize(xpw,nreps,0);
   PutRNGstate();
 
-  PROTECT(retval = NEW_LIST(10)); nprotect++;
-  PROTECT(retvalnames = NEW_CHARACTER(10)); nprotect++;
+  PROTECT(retval = NEW_LIST(9)); nprotect++;
+  PROTECT(retvalnames = NEW_CHARACTER(9)); nprotect++;
   SET_STRING_ELT(retvalnames,0,mkChar("fail"));
   SET_STRING_ELT(retvalnames,1,mkChar("loglik"));
   SET_STRING_ELT(retvalnames,2,mkChar("ess"));
@@ -399,8 +344,7 @@ SEXP pfilter2_computations (SEXP x, SEXP params, SEXP Np,
   SET_STRING_ELT(retvalnames,5,mkChar("pm"));
   SET_STRING_ELT(retvalnames,6,mkChar("pv"));
   SET_STRING_ELT(retvalnames,7,mkChar("fm"));
-  SET_STRING_ELT(retvalnames,8,mkChar("pa"));
-  SET_STRING_ELT(retvalnames,9,mkChar("weight"));
+  SET_STRING_ELT(retvalnames,8,mkChar("ancestry"));
   SET_NAMES(retval,retvalnames);
 
   SET_ELEMENT(retval,0,fail);
@@ -428,9 +372,10 @@ SEXP pfilter2_computations (SEXP x, SEXP params, SEXP Np,
   if (do_fm) {
     SET_ELEMENT(retval,7,fm);
   }
-  SET_ELEMENT(retval,8,anc);
-  
-  SET_ELEMENT(retval,9,pw);
+  if (do_ta) {
+    SET_ELEMENT(retval,8,anc);
+  }
+
   UNPROTECT(nprotect);
   return(retval);
 }

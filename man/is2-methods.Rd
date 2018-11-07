@@ -67,7 +67,7 @@ compare.is2(z)
     }
   }
 }
-\author{{Dao Nguyen \email{nguyenxd at umich dot edu}}, {Edward L. Ionides \email{ionides at umich dot edu}}}
+\author{{Dao Nguyen \email{dxnguyen at oelmiss dot edu}}, {Edward L. Ionides \email{ionides at umich dot edu}}}
 \seealso{\code{\link{is2}}, \code{\link{pfilter2}}}
 \keyword{models}
 \keyword{ts}

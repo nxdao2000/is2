@@ -1,48 +1,5 @@
-## this file contains short definitions of methods for the 'is2' class
+## this file contains short definitions of methods for the 'mif' class
 
-## draw a set of Np particles from the user-specified distribution
-particles.internal <- function (object, Np = 1, center = coef(object), sd = 0, ...) {
-  if ((length(sd)==1) && (sd == 0)) {
-    sd <- rep(0,length(center))
-    names(sd) <- names(center)
-  }
-  if (is.null(names(center)) || is.null(names(sd)))
-    stop("particles error: ",sQuote("center")," and ",sQuote("sd")," must have names",call.=FALSE)
-  if (length(sd)!=length(center))
-    stop("particles error: ",sQuote("center")," and ",sQuote("sd")," must be of equal length",call.=FALSE)
-  x <- try(
-           do.call(
-                   object@particles,
-                   c(
-                     list(Np=Np,center=center,sd=sd),
-                     object@userdata
-                     )
-                   ),
-           silent=FALSE
-           )
-  if (inherits(x,'try-error'))
-    stop("particles error: error in user-specified ",sQuote("particles")," function",call.=FALSE)
-  if (
-      !is.matrix(x) ||
-      Np!=ncol(x) ||
-      is.null(rownames(x))
-      )
-    stop("particles error: user ",sQuote("particles")," function must return a matrix with Np columns and rownames",call.=FALSE)
-  x
-}
-
-setMethod(
-          "particles",
-          signature=signature(object="is2"),
-          definition=function (object, Np = 1, center = coef(object),
-            sd = 0, ...) {
-            particles.internal(object=object,Np=Np,center=center,sd=sd,...)
-          }
-          )
-
-
-## extract the estimated log likelihood
-setMethod('logLik','is2',function(object,...)object@loglik)
 
 ## extract the convergence record
 conv.rec.internal <- function (object, pars, transform = FALSE, ...) {
@@ -54,7 +11,7 @@ conv.rec.internal <- function (object, pars, transform = FALSE, ...) {
                       partrans(
                                object,
                                params=t(object@conv.rec[,pars.proper]),
-                               dir="forward"
+                               dir="fromEstimationScale"
                                )
                       ),
                     object@conv.rec[,pars.improper]
@@ -79,31 +36,31 @@ conv.rec.internal <- function (object, pars, transform = FALSE, ...) {
   }
 }
 
-setMethod('conv.rec','is2',
+setMethod('conv.rec','mif3',
           function (object, pars, transform = FALSE, ...) {
             conv.rec.internal(object=object,pars=pars,transform=transform,...)
           }
           )
 
-## plot is2 object
+## plot mif3 object
 setMethod(
           "plot",
-          "is2",
+          "mif3",
           function (x, y, ...) {
             if (!missing(y)) {
               y <- substitute(y)
               warning(sQuote(y)," is ignored")
             }
-            is2.diagnostics(list(x))
+            mif3.diagnostics(list(x))
           }
           )
 
-## is2List class
+## mif3List class
 setClass(
-         'is2List',
+         'mif3List',
          contains='list',
          validity=function (object) {
-           if (!all(sapply(object,is,'is2'))) {
+           if (!all(sapply(object,is,'mif3'))) {
              retval <- paste0(
                               "error in ",sQuote("c"),
                               ": dissimilar objects cannot be combined"
@@ -114,7 +71,7 @@ setClass(
            if (!all(apply(d,1,diff)==0)) {
              retval <- paste0(
                               "error in ",sQuote("c"),
-                              ": to be combined, ",sQuote("is2"),
+                              ": to be combined, ",sQuote("mif3"),
                               " objects must equal numbers of iterations"
                               )
              return(retval)
@@ -125,75 +82,83 @@ setClass(
 
 setMethod(
           'c',
-          signature=signature(x='is2'),
+          signature=signature(x='mif3'),
           definition=function (x, ...) {
             y <- list(...)
             if (length(y)==0) {
-              new("is2List",list(x))
+              new("mif3List",list(x))
             } else {
-              p <- sapply(y,is,'is2')
-              pl <- sapply(y,is,'is2List')
-              if (any(!(p||pl)))
-                stop("cannot mix ",sQuote("is2"),
-                     " and non-",sQuote("is2")," objects")
+              p <- sapply(y,is,'mif3')
+              pl <- sapply(y,is,'mif3List')
+              if (!all(p||pl))
+                stop("cannot mix ",sQuote("mif3"),
+                     " and non-",sQuote("mif3")," objects")
               y[p] <- lapply(y[p],list)
               y[pl] <- lapply(y[pl],as,"list")
-              new("is2List",c(list(x),y,recursive=TRUE))
+              new("mif3List",c(list(x),y,recursive=TRUE))
             }
           }
           )
 
 setMethod(
           'c',
-          signature=signature(x='is2List'),
+          signature=signature(x='mif3List'),
           definition=function (x, ...) {
             y <- list(...)
             if (length(y)==0) {
               x
             } else {
-              p <- sapply(y,is,'is2')
-              pl <- sapply(y,is,'is2List')
-              if (any(!(p||pl)))
-                stop("cannot mix ",sQuote("is2"),
-                     " and non-",sQuote("is2")," objects")
+              p <- sapply(y,is,'mif3')
+              pl <- sapply(y,is,'mif3List')
+              if (!all(p||pl))
+                stop("cannot mix ",sQuote("mif3"),
+                     " and non-",sQuote("mif3")," objects")
               y[p] <- lapply(y[p],list)
               y[pl] <- lapply(y[pl],as,"list")
-              new("is2List",c(as(x,"list"),y,recursive=TRUE))
+              new("mif3List",c(as(x,"list"),y,recursive=TRUE))
             }
           }
           )
 
 setMethod(
           "[",
-          signature=signature(x="is2List"),
+          signature=signature(x="mif3List"),
           definition=function(x, i, ...) {
-            new('is2List',as(x,"list")[i])
+            new('mif3List',as(x,"list")[i])
           }
           )
 
 setMethod(
           'conv.rec',
-          signature=signature(object='is2List'),
+          signature=signature(object='mif3List'),
           definition=function (object, ...) {
             lapply(object,conv.rec,...)
           }
           )
 
 setMethod(
+          'coef',
+          signature=signature(object='mif3List'),
+          definition=function (object, ...) {
+            do.call(rbind,lapply(object,coef,...))
+          }
+          )
+
+setMethod(
           "plot",
-          signature=signature(x='is2List'),
+          signature=signature(x='mif3List'),
           definition=function (x, y, ...) {
             if (!missing(y)) {
               y <- substitute(y)
               warning(sQuote(y)," is ignored")
             }
-            is2.diagnostics(x)
+            mif3.diagnostics(x)
           }
           )
 
-predvarplot.is2 <- function (object, pars, type = 'l', mean = FALSE, ...) {
-  if (!is(object,'is2'))
-    stop("predvarplot error: ",sQuote("object")," must be of class ",sQuote("is2"),call.=FALSE)
+predvarplot.mif3 <- function (object, pars, type = 'l', mean = FALSE, ...) {
+  if (!is(object,'mif3'))
+    stop("predvarplot error: ",sQuote("object")," must be of class ",sQuote("mif3"),call.=FALSE)
   if (missing(pars))
     pars <- object@pars
   npv <- pred.var(object,pars)/(object@random.walk.sd[pars]^2)
@@ -208,13 +173,8 @@ predvarplot.is2 <- function (object, pars, type = 'l', mean = FALSE, ...) {
   }
 }
 
-compare.is2 <- function (z) {
-  stop(sQuote("compare.is2")," has been deprecated in favor of ",
-       sQuote("plot"))
-}
-
-is2.diagnostics <- function (z) {
-  ## assumes that z is a list of is2s with identical structure
+mif3.diagnostics <- function (z) {
+  ## assumes that z is a list of mif3s with identical structure
   mar.multi <- c(0,5.1,0,2.1)
   oma.multi <- c(6,0,5,0)
   xx <- z[[1]]
@@ -273,7 +233,7 @@ is2.diagnostics <- function (z) {
     mtext("Filter diagnostics (last iteration)",3,line=2,outer=TRUE)
   } 
 
-  ## plot is2 convergence diagnostics
+  ## plot mif convergence diagnostics
   other.diagnostics <- c("loglik", "nfail")
   plotnames <- c(other.diagnostics,estnames)
   nplots <- length(plotnames)
@@ -284,7 +244,7 @@ is2.diagnostics <- function (z) {
   ## on.exit(par(oldpar)) 
   low <- 1
   hi <- 0
-  iteration <- seq(0,xx@Nis)
+  iteration <- seq(0,xx@Nmif)
   while (hi<nplots) {
     hi <- min(low+n.per.page-1,nplots)
     for (i in seq(from=low,to=hi,by=1)) {
@@ -304,10 +264,10 @@ is2.diagnostics <- function (z) {
       mtext(plotnames[i],y.side,line=3)
       do.xax <- (n%%nr==0||n==n.per.page)
       if (do.xax) axis(1,xpd=NA)
-      if (do.xax) mtext("is2 iteration",side=1,line=3)
+      if (do.xax) mtext("mif3 iteration",side=1,line=3)
     }  
     low <- hi+1
-    mtext("is2 convergence diagnostics",3,line=2,outer=TRUE)
+    mtext("mif3 convergence diagnostics",3,line=2,outer=TRUE)
   }
   invisible(NULL)
 }

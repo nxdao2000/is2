@@ -22,7 +22,7 @@ is2a <- is2(ou2,Nis=30,start=guess1,
              cooling.type="hyperbolic",
              cooling.fraction=0.1,
              method="is2",
-			 lag=2,
+			 lag=1,
              tol=1e-8
              )
 

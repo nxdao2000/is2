@@ -1,11 +1,11 @@
-setMethod("$",signature(x="pfilterd2.pomp"),function (x,name) slot(x,name))
-setMethod("logLik",signature(object="pfilterd2.pomp"),function(object,...)object@loglik)
-setMethod("eff.sample.size",signature(object="pfilterd2.pomp"),function(object,...)object@eff.sample.size)
-setMethod("cond.logLik",signature(object="pfilterd2.pomp"),function(object,...)object@cond.loglik)
+setMethod("$",signature(x="pfilter2d.pomp"),function (x,name) slot(x,name))
+setMethod("logLik",signature(object="pfilter2d.pomp"),function(object,...)object@loglik)
+setMethod("eff.sample.size",signature(object="pfilter2d.pomp"),function(object,...)object@eff.sample.size)
+setMethod("cond.logLik",signature(object="pfilter2d.pomp"),function(object,...)object@cond.loglik)
 
 ## 'coerce' method: allows for coercion of a "pomp" object to a data-frame
 setAs(
-      from="pfilterd2.pomp",
+      from="pfilter2d.pomp",
       to="data.frame",
       def = function (from) {
         pm <- pred.mean(from)
@@ -26,12 +26,12 @@ setAs(
       }
       )
 
-as.data.frame.pfilterd2.pomp <- function (x, row.names, optional, ...) as(x,"data.frame")
+as.data.frame.pfilter2d.pomp <- function (x, row.names, optional, ...) as(x,"data.frame")
 
 ## extract the prediction means
 setMethod(
           "pred.mean",
-          "pfilterd2.pomp",
+          "pfilter2d.pomp",
           function (object, pars, ...) {
             if (missing(pars)) pars <- rownames(object@pred.mean)
             object@pred.mean[pars,]
@@ -41,7 +41,7 @@ setMethod(
 ## extract the prediction variances
 setMethod(
           "pred.var",
-          "pfilterd2.pomp",
+          "pfilter2d.pomp",
           function (object, pars, ...) {
             if (missing(pars)) pars <- rownames(object@pred.var)
             object@pred.var[pars,]
@@ -52,9 +52,19 @@ setMethod(
 ## extract the filtering means
 setMethod(
           "filter.mean",
-          "pfilterd2.pomp",
+          "pfilter2d.pomp",
           function (object, pars, ...) {
             if (missing(pars)) pars <- rownames(object@filter.mean)
             object@filter.mean[pars,]
+          }
+          )
+
+## extract the filtered trajectory
+setMethod(
+          "filter.traj",
+          "pfilter2d.pomp",
+          function (object, vars, ...) {
+            if (missing(vars)) vars <- rownames(object@filter.traj)
+            object@filter.traj[vars,,,drop=FALSE]
           }
           )

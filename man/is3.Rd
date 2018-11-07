@@ -1,34 +1,34 @@
-\name{is2}
+\name{is3}
 \docType{methods}
-\alias{is2}
-\alias{is2,is2-method}
-\alias{is2-is2}
-\alias{is2,pfilterd2.pomp-method}
-\alias{is2-pfilterd2.pomp}
-\alias{is2,pomp-method}
-\alias{is2-pomp}
+\alias{is3}
+\alias{is3,is3-method}
+\alias{is3-is3}
+\alias{is3,pfilterd2.pomp-method}
+\alias{is3-pfilterd2.pomp}
+\alias{is3,pomp-method}
+\alias{is3-pomp}
 \alias{continue}
-\alias{continue,is2-method}
-\alias{continue-is2}
-\alias{is2-class}
+\alias{continue,is3-method}
+\alias{continue-is3}
+\alias{is3-class}
 \title{Iterated Smoothing}
 \description{
   Iterated smoothing algorithms for estimating the parameters of a partially-observed Markov process.
 }
 \usage{
-\S4method{is2}{pomp}(object, Nis = 1, start, pars, ivps = character(0),
+\S4method{is3}{pomp}(object, Nis = 1, start, pars, ivps = character(0),
     particles, rw.sd, Np, ic.lag, var.factor, lag,
     cooling.type = c("geometric","hyperbolic"), 
     cooling.fraction, cooling.factor,
-    method = c("is2","ris1","is1"),
+    method = c("is3","ris1","is1"),
     tol = 1e-17, max.fail = Inf,
     verbose = getOption("verbose"), transform = FALSE, \dots)
-\S4method{is2}{pfilterd2.pomp}(object, Nis = 1, Np, tol, \dots)
-\S4method{is2}{is2}(object, Nis, start, pars, ivps,
+\S4method{is3}{pfilterd2.pomp}(object, Nis = 1, Np, tol, \dots)
+\S4method{is3}{is3}(object, Nis, start, pars, ivps,
     particles, rw.sd, Np, ic.lag, lag, var.factor,
     cooling.type, cooling.fraction,
     method, tol, transform, \dots)
-\S4method{continue}{is2}(object, Nis = 1, \dots)
+\S4method{continue}{is3}(object, Nis = 1, \dots)
 }
 \arguments{
   \item{object}{
@@ -49,7 +49,7 @@
   \item{ivps}{
     optional character vector naming the initial-value parameters (IVPs) to be estimated.
     Every parameter named in \code{ivps} must have a positive random-walk standard deviation specified in \code{rw.sd}.
-    If \code{pars} is empty, i.e., only IVPs are to be estimated, see below \dQuote{Using is2 to estimate initial-value parameters only}.
+    If \code{pars} is empty, i.e., only IVPs are to be estimated, see below \dQuote{Using is3 to estimate initial-value parameters only}.
   }
   \item{particles}{
     Function of prototype \code{particles(Np,center,sd,...)} which sets up the starting particle matrix by drawing a sample of size \code{Np} from the starting particle distribution centered at \code{center} and of width \code{sd}.
@@ -79,14 +79,14 @@
   \item{ic.lag}{
     a positive integer;
     the timepoint for fixed-lag smoothing of initial-value parameters.
-    The \code{is2} update for initial-value parameters consists of replacing them by their filtering mean at time \code{times[ic.lag]}, where \code{times=time(object)}.
+    The \code{is3} update for initial-value parameters consists of replacing them by their filtering mean at time \code{times[ic.lag]}, where \code{times=time(object)}.
     It makes no sense to set \code{ic.lag>length(times)};
     if it is so set, \code{ic.lag} is set to \code{length(times)} with a warning.
   }
   \item{var.factor}{
     a positive number;
     the scaling coefficient relating the width of the starting particle distribution to \code{rw.sd}.
-    In particular, the width of the distribution of particles at the start of the first is2 iteration will be \code{random.walk.sd*var.factor}.
+    In particular, the width of the distribution of particles at the start of the first is3 iteration will be \code{random.walk.sd*var.factor}.
   }
   \item{lag}{
     a positive integer;
@@ -95,16 +95,16 @@
   \item{cooling.type, cooling.fraction, cooling.factor}{
     specifications for the cooling schedule, i.e., the manner in which the intensity of the parameter perturbations is reduced with successive filtering iterations.
     \code{cooling.type} specifies the nature of the cooling schedule.
-    When \code{cooling.type}-\code{="geometric"}, on the n-th is2 iteration, the relative perturbation intensity is \code{cooling.fraction}-\code{^(n/50)}.
-    When \code{cooling.type="hyperbolic"}, on the n-th is2 iteration, the relative perturbation intensity is \code{(s+1)/(s+n)}, where \code{(s+1)/}-\code{(s+50)=cooling.fraction}.
-    \code{cooling.fraction} is the relative magnitude of the parameter perturbations after 50 is2 iterations.
+    When \code{cooling.type}-\code{="geometric"}, on the n-th is3 iteration, the relative perturbation intensity is \code{cooling.fraction}-\code{^(n/50)}.
+    When \code{cooling.type="hyperbolic"}, on the n-th is3 iteration, the relative perturbation intensity is \code{(s+1)/(s+n)}, where \code{(s+1)/}-\code{(s+50)=cooling.fraction}.
+    \code{cooling.fraction} is the relative magnitude of the parameter perturbations after 50 is3 iterations.
     \code{cooling.factor} is now deprecated:
     to achieve the old behavior, use \code{cooling.type="geometric"} and \code{cooling.fraction}-
     \code{=(cooling.factor)^50}.
   }
   \item{method}{
     \code{method} sets the update rule used in the algorithm.
-    \code{method="is2"} uses the iterated smoothing update rule (Ionides 2015 submitted);
+    \code{method="is3"} uses the iterated smoothing update rule (Ionides 2015 submitted);
     \code{method="ris1"} uses the reduced iterated smoothing update rule (Doucet 2013, Ionides 2015 submitted);
     \code{method="is1"} uses the reduced iterated smoothing update rule (Doucet 2013);
   }
@@ -125,22 +125,22 @@
     additional arguments that override the defaults.
   }
 }
-\section{Re-running is2 Iterations}{
-  To re-run a sequence of is2 iterations, one can use the \code{is2} method on a \code{is2} object.
-  By default, the same parameters used for the original is2 run are re-used (except for \code{weighted}, \code{tol}, \code{max.fail}, and \code{verbose}, the defaults of which are shown above).
+\section{Re-running is3 Iterations}{
+  To re-run a sequence of is3 iterations, one can use the \code{is3} method on a \code{is3} object.
+  By default, the same parameters used for the original is3 run are re-used (except for \code{weighted}, \code{tol}, \code{max.fail}, and \code{verbose}, the defaults of which are shown above).
   If one does specify additional arguments, these will override the defaults.
 }
-\section{Continuing is2 Iterations}{
-  One can resume a series of is2 iterations from where one left off using the \code{continue} method.
-  A call to \code{is2} to perform \code{Nis=m} iterations followed by a call to \code{continue} to perform \code{Nis=n} iterations will produce precisely the same effect as a single call to \code{is2} to perform \code{Nis=m+n} iterations.
-  By default, all the algorithmic parameters are the same as used in the original call to \code{is2}.
+\section{Continuing is3 Iterations}{
+  One can resume a series of is3 iterations from where one left off using the \code{continue} method.
+  A call to \code{is3} to perform \code{Nis=m} iterations followed by a call to \code{continue} to perform \code{Nis=n} iterations will produce precisely the same effect as a single call to \code{is3} to perform \code{Nis=m+n} iterations.
+  By default, all the algorithmic parameters are the same as used in the original call to \code{is3}.
   Additional arguments will override the defaults.
 }
-\section{Using is2 to estimate initial-value parameters only}{
-  One can use is2 fixed-lag smoothing to estimate only initial value parameters (IVPs).
+\section{Using is3 to estimate initial-value parameters only}{
+  One can use is3 fixed-lag smoothing to estimate only initial value parameters (IVPs).
   In this case, \code{pars} is left empty and the IVPs to be estimated are named in \code{ivps}.
-  If \code{theta} is the current parameter vector, then at each is2 iteration, \code{Np} particles are drawn from a distribution centered at \code{theta} and with width proportional to \code{var.factor*rw.sd}, a particle filtering operation is performed, and \code{theta} is replaced by the filtering mean at \code{time(object)[ic.lag]}.
-  Note the implication that, when \code{is2} is used in this way on a time series any longer than \code{ic.lag}, unnecessary work is done.
+  If \code{theta} is the current parameter vector, then at each is3 iteration, \code{Np} particles are drawn from a distribution centered at \code{theta} and with width proportional to \code{var.factor*rw.sd}, a particle filtering operation is performed, and \code{theta} is replaced by the filtering mean at \code{time(object)[ic.lag]}.
+  Note the implication that, when \code{is3} is used in this way on a time series any longer than \code{ic.lag}, unnecessary work is done.
   If the time series in \code{object} is longer than \code{ic.lag}, consider replacing \code{object} with \code{window(object,end=ic.lag)}. 
 }
 \section{Details}{
@@ -175,10 +175,10 @@
   Journal of Statistical Software, 2016.
 }
 
-\author{{Dao Nguyen \email{dxnguyen at olemiss dot edu}}, {Edward L. Ionides \email{ionides at umich dot edu}}}
 
+\author{{Dao Nguyen \email{dxnguyen at olemiss dot edu}}, {Xin Dang \email{xdang at olemiss dot edu}}, {Duc Anh Doan \email{ddoan at olemiss dot edu}}}
 \seealso{
-  \code{\link{is2-methods}}, \code{\link{pfilter2}}.
-  See the \dQuote{intro_to_is2} vignette for examples.
+  \code{\link{is3-methods}}, \code{\link{pfilter2}}.
+  See the \dQuote{intro_to_is3} vignette for examples.
 }
 \keyword{ts}

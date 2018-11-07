@@ -416,7 +416,7 @@ is2.internal <- function (
         method=method,
         cooling.type=cooling.type,
         cooling.fraction=cooling.fraction,
-        paramMatrix= paramMatrix,
+        paramMatrix= params,
         lag=lag
     )
 }

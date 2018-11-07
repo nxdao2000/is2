@@ -1,29 +1,25 @@
 Package: is2
 Type: Package
 Title: Iterated smoothing for partially observed Markov processes
-Version: 0.10-1
-Date: 2015-04-03
-Authors@R: c(person(given=c("Dao"),family="Nguyen", role=c("aut","cre"), email="nguyenxd@umich.edu"),
-	  person(given=c("Edward","L."),family="Ionides",role=c("aut"))
+Version: 0.11-1
+Date: 2018-11-03
+Authors@R: c(person(given=c("Dao"),family="Nguyen", role=c("aut","cre"), email="dxnguyen@olemiss.edu"),
+	  person(given=c("Xin"),family="Dang",role=c("aut")),
+	  person(given=c("Duc Anh"),family="Doan",role=c("ctb"))
 	  )
-URL: http://mif3.r-forge.r-project.org
+URL: http://is2.r-forge.r-project.org
 Description: Inference methods using iterated smoothing for partially-observed Markov processes
 Depends: R(>= 3.0.0), pomp
 Imports: stats, graphics, mvtnorm, deSolve, coda
 License: GPL(>= 2)
 LazyData: true
-MailingList: Subscribe to pomp-announce@r-forge.r-project.org for
-        announcements by going to
-        http://lists.r-forge.r-project.org/mailman/listinfo/mif3-announce.
-Collate: generics.R 
-         pfilter2.R pfilter2-methods.R
-        is2.R is2-methods.R 
-Author: Dao Nguyen [aut, cre],
-  Edward L. Ionides [aut]
-Maintainer: Dao Nguyen <nguyenxd@umich.edu>
+Collate: generics.R pfilter1.R pfilter1_methods.R
+         pfilter2.R pfilter2_methods.R pfilter3.R pfilter3_methods.R pfilter4.R pfilter4_methods.R aif.R aif_methods.R mif1.R mif1_methods.R avif.R avif_methods.R mifMomentum.R mifMomentum_methods.R pmif.R pmif_methods.R psmooth.R psmooth_methods.R is2.R is2_methods.R is3.R is3_methods.R mif3.R mif3_methods.R
+Author: Dao Nguyen [aut, cre], Xin Dang [aut]
+Maintainer: Dao Nguyen <dxnguyenxd@olemiss.edu>
 Repository: R-Forge
 Repository/R-Forge/Project: is2
-Repository/R-Forge/Revision: 1
-Repository/R-Forge/DateTimeStamp: 2015-04-04 19:23:13
-Date/Publication: 2015-04-04 19:23:13
-Packaged: 2015-04-04 15:55:11 UTC; root
+Repository/R-Forge/Revision: 1.0
+Repository/R-Forge/DateTimeStamp: 2018-11-03 11:11:11
+Date/Publication: 2018-11-03 11:11:11
+Packaged: 2018-11-03 11:11:11 UTC; root
